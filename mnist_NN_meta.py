@@ -33,16 +33,39 @@ def load_NN(name, test = False):
 def main():
 
 	global data #For later tests
+	l_rate = 0.4
+	nb_epochs = 24
+
+	#Load and test trained NN
+	NNnames = [
+		'RESERVE_NN_l64#50816#EPOCHS(24).nt',
+		'RESERVE_NN_l32l16#25760#EPOCHS(24).nt',
+		'RESERVE_NN_l64l48#53728#EPOCHS(24).nt',
+		'META_NET_l256#59904#EPOCHS(24).nt'
+	]
+
+
+	try:
+		for n in NNnames:
+			print(n)
+			lnn = load_NN(n, test=True)
+		return
+	except FileNotFoundError:
+		print("NN to test not found")
+
+
+
+
+	#Train NNs
 	nns = [
 		NeuralNet([{'name': 'layer1', 'neurNb': 64}]),
-		NeuralNet([{'name': 'layer1', 'neurNb': 64}, {'name': 'layer1', 'neurNb': 48}]),
-		NeuralNet([{'name': 'layer1', 'neurNb': 32}, {'name': 'layer1', 'neurNb': 16}]),
+		NeuralNet([{'name': 'layer1', 'neurNb': 64}, {'name': 'layer2', 'neurNb': 48}]),
+		NeuralNet([{'name': 'layer1', 'neurNb': 32}, {'name': 'layer2', 'neurNb': 16}]),
 	]
+
 
 	nameList = []
 
-	l_rate = 0.4
-	nb_epochs = 24
 	for nn in nns:
 		print(nn.h_layers)
 		print("l_rate:", l_rate)
@@ -58,35 +81,38 @@ def main():
 		nn.test(data)
 		nn.saveNN('RESERVE_NN')
 
-	'''
-	newMetaNNs = [
-		NeuralNet([{'name': 'layer1', 'neurNb': 64}], neural_inputs = nns, image_input=False),
+
+
+
+	#Train meta NN
+	names = [
+		'RESERVE_NN_l64#50816#EPOCHS(24).nt',
+		'RESERVE_NN_l32l16#25760#EPOCHS(24).nt',
+		'RESERVE_NN_l64l48#53728#EPOCHS(24).nt'
 	]
 
+	ni = []
 
-	for newMetaNN in newMetaNNs:
-		print(newMetaNN.h_layers)
-		for l_rate in l_rates:
-			print("l_rate:", l_rate)
-			#nn.__init__(nn.h_layers)
-			for i in range(60):
+	for n in names:
+		lnn = load_NN(n, test=True)
+		ni.append([lnn, list(range(1, n.count('l')+1))])
 
-				real_rate = l_rate-i*0.0012
-				if not i%10:
-					real_rate += math.sqrt(i)*0.0024
-				data = load_mnist(path = '')
-				newMetaNN.training(data, real_rate)
-				data = load_mnist(dataset = "testing", path = "")
-				newMetaNN.test(data)
-				if i == 26:
-					newMetaNN.saveNN('META_NET_SPE3')
-				elif i == 48:
-					newMetaNN.saveNN('META_NET_SPE3')
+	newMetaNN = NeuralNet([{'name': 'layer1', 'neurNb': 256}], neural_inputs = ni, image_input=False)
 
-			data = load_mnist(dataset = "testing", path = "")
-			newMetaNN.test(data)
-			newMetaNN.saveNN('META_NET_SPE3')
-	'''
+
+	print(newMetaNN.h_layers)
+	print("l_rate:", l_rate)
+	#nn.__init__(nn.h_layers)
+	for i in range(nb_epochs):
+
+		data = load_mnist(path = '')
+		newMetaNN.training(data, l_rate)
+		data = load_mnist(dataset = "testing", path = "")
+		newMetaNN.test(data)
+
+	data = load_mnist(dataset = "testing", path = "")
+	newMetaNN.test(data)
+	newMetaNN.saveNN('META_NET')
 
 
 class NeuralNet:
@@ -206,15 +232,17 @@ class NeuralNet:
 		if self.epochs > 2:
 			batch_size = 8
 		if self.epochs > 4:
-			batch_size = 32
+			batch_size = 16
 		if self.epochs > 5:
-			batch_size = 64
+			batch_size = 32
 		if self.epochs > 8:
-			batch_size = 128
+			batch_size = 64
 		if self.epochs > 17:
-			batch_size = 512
+			batch_size = 128
+		if self.epochs > 25:
+			batch_size = 256
 
-		l_rate/=math.sqrt(batch_size)
+		l_rate/=(batch_size**(1/10))
 		print("batch_size:", batch_size)
 
 		for d in data:
