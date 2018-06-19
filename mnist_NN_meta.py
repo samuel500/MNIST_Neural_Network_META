@@ -45,6 +45,7 @@ def main():
 	]
 
 
+
 	try:
 		for n in NNnames:
 			print(n)
@@ -52,8 +53,6 @@ def main():
 		return
 	except FileNotFoundError:
 		print("NN to test not found")
-
-
 
 
 	#Train NNs
@@ -70,8 +69,10 @@ def main():
 		print(nn.h_layers)
 		print("l_rate:", l_rate)
 		#nn.__init__(nn.h_layers)
+		l_rate = 0.5
 		for i in range(nb_epochs):
 			data = load_mnist(path = '')
+			l_rate *= 0.95
 			nn.training(data, l_rate)
 			data = load_mnist(dataset = "testing", path = "")
 			nn.test(data)
@@ -80,8 +81,6 @@ def main():
 		data = load_mnist(dataset = "testing", path = "")
 		nn.test(data)
 		nn.saveNN('RESERVE_NN')
-
-
 
 
 	#Train meta NN
@@ -228,21 +227,22 @@ class NeuralNet:
 		nbKnownOrNot = [0, 0]
 
 		#Changing batch size (should be improved)
-		batch_size = 4
+		batch_size = 2
+		if self.epochs > 0:
+			batch_size = 4
 		if self.epochs > 2:
 			batch_size = 8
-		if self.epochs > 4:
-			batch_size = 16
 		if self.epochs > 5:
+			batch_size = 16
+		if self.epochs > 6:
 			batch_size = 32
-		if self.epochs > 8:
+		if self.epochs > 10:
 			batch_size = 64
-		if self.epochs > 17:
+		if self.epochs > 18:
 			batch_size = 128
 		if self.epochs > 25:
 			batch_size = 256
 
-		l_rate/=(batch_size**(1/10))
 		print("batch_size:", batch_size)
 
 		for d in data:
