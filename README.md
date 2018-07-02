@@ -1,6 +1,6 @@
 # MNIST_Neural_Network_META
 
-Simple fully connected neural network trained using gradient descent on the MNIST dataset. 
+Simple fully connected neural network trained using batch gradient descent on the MNIST dataset. 
 Sigmoid activation function.
 
 ## Meta

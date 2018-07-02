@@ -6,8 +6,7 @@ from time import time
 import pickle
 import os
 import struct
-from random import random
-from random import choice
+from random import random, choice
 
 def def_sigmoid(x):
 	if x>-64:
